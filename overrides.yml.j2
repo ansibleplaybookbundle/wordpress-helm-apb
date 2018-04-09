@@ -1,0 +1,31 @@
+---
+serviceType: "NodePort"
+
+wordpressUsername: "{{ wp_username }}"
+wordpressPassword: "{{ wp_password }}"
+wordpressFirstName: "{{ wp_firstname }}"
+wordpressLastName: "{{ wp_lastname }}"
+wordpressBlogName: "{{ wp_blogname }}"
+
+mariadb:
+  enabled: false
+
+externalDatabase:
+## All of these values are only used when mariadb.enabled is set to false
+  ## Database host
+  host: "{{ DB_HOST }}"
+
+  ## Database Root User (so wordpress can create the db schema etc)
+  rootPassword: ""
+
+  ## non-root Username for Wordpress Database
+  user: "{{ DB_USER }}"
+
+  ## Database password
+  password: "{{ DB_PASSWORD }}"
+
+  ## Database name
+  database: "{{ DB_NAME }}"
+
+  ## Database port number
+  port: {{ DB_PORT }}

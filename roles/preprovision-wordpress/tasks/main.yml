@@ -1,0 +1,33 @@
+##############################################################################
+# Pre-provision wordpress
+#
+# This role performs actions before the main provisioning gets done by the
+# helm-ansible-base role.
+#
+# - find a secret with the label app=wordpress
+# - use that secret to set facts that get used in the overrides.yml template
+##############################################################################
+
+- name: get database binding
+  shell: "oc get secret -n {{ namespace }} -l app=wordpress -o json | jq .items[0].data"
+  register: bindingout
+
+- lineinfile:
+    line: "Secret not found. There must be a secret with label app=wordpress"
+    path: "/dev/termination-log"
+    unsafe_writes: true
+  when: bindingout.stdout == "null"
+
+- fail:
+    msg: "Secret not found. There must be a secret with label app=wordpress"
+  when: bindingout.stdout == "null"
+
+- name: set database facts
+  set_fact:
+    DB_HOST: "{{ (bindingout.stdout|from_json)['DB_HOST'] | b64decode }}"
+    DB_USER: "{{ (bindingout.stdout|from_json)['DB_USER'] | b64decode }}"
+    DB_PASSWORD: "{{ (bindingout.stdout|from_json)['DB_PASSWORD'] | b64decode }}"
+    DB_NAME: "{{ (bindingout.stdout|from_json)['DB_NAME'] | b64decode }}"
+    DB_PORT: "{{ (bindingout.stdout|from_json)['DB_PORT'] | b64decode }}"
+  when: bindingout.stdout != "null"
+
