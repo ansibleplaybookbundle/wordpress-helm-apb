@@ -1,0 +1,23 @@
+##############################################################################
+# Post-provision wordpress
+#
+# This role performs actions after the main provisioning gets done by the
+# helm-ansible-base role. This role must run after the helm-ansible-base role,
+# because it requires the `hb_release_name` variable to be set by that role.
+#
+# Because the resources below include the "release" label, they will be deleted
+# during deprovision by the helm-ansible-base role.
+#
+# - if running on OpenShift, creates a route
+##############################################################################
+
+- name: create OpenShift route
+  openshift_v1_route:
+    name: "{{ hb_release_name }}-wordpress"
+    namespace: "{{ namespace }}"
+    labels:
+      app: "{{ hb_release_name }}-wordpress"
+      release: "{{ hb_release_name }}"
+    to_name: "{{ hb_release_name }}-wordpress"
+    spec_port_target_port: http
+  when: cluster == "openshift"
